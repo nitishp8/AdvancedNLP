@@ -1,0 +1,403 @@
+import torch
+import torch.nn as nn
+from sklearn.metrics import f1_score, classification_report
+
+class DataLoader:
+    def __init__(self,filename):
+        self.filename = filename
+        self.X, self.Y = self.get_data_from_file()
+            
+    def check_sanity(self,X,Y):
+        if len(X) != len(Y): return "No. of sentences and targets must be same."
+        flag = False
+        for index,(el1,el2) in enumerate(zip(X,Y)):
+            if len(el1) != len(el2):
+                flag = True
+                error_index = index
+                break
+        if flag:
+            return "Length of sentence " + str(error_index) + " does not match with target size."
+        else: return "all fine"
+    
+    def get_data_from_file(self):
+        with open(self.filename) as f:
+            X, Y = [],[]
+            sentence, target = [],[]
+            for index,line in enumerate(f):
+                if index < 2: continue
+                if line.strip() == ". . O O":
+                    X.append(sentence)
+                    Y.append(target)
+                    sentence, target = [], []
+                elif line.strip().split(" ")[0] != "":
+                    sentence.append(line.strip().split(" ")[0])
+                    target.append(line.strip().split(" ")[-1])
+        msg = self.check_sanity(X,Y) 
+        if msg == "all fine": return X,Y
+        else: raise ValueError(msg)
+
+class VocabBuilder:
+    def __init__(self,X,padding_token, unknown_token):
+        self.X = X
+        self.padding_token = padding_token
+        self.unknown_token = unknown_token
+        self.word_to_index, self.index_to_word = self.generate_vocab()
+    
+    def generate_vocab(self):
+        vocab_set = set()
+        for sentence in self.X:
+            for word in sentence: vocab_set.add(word)
+        vocab_set.add(self.padding_token)
+        vocab_set.add(self.unknown_token)
+        vocab_set = list(vocab_set)
+        word_to_index = {k:v for v,k in enumerate(vocab_set)}
+        index_to_word = {v:k for k,v in word_to_index.items()}
+        return word_to_index,index_to_word
+    
+    def get_vocab_size(self):
+        return len(self.word_to_index)
+        
+class LabelBuilder:
+    def __init__(self,Y,padding_token):
+        self.Y = Y
+        self.padding_token = padding_token
+        self.token_to_int, self.int_to_token = self.generate_labels()
+        
+    def generate_labels(self):
+        token_set = set()
+        for target in self.Y:
+            for token in target: token_set.add(token)
+        token_set.add(self.padding_token)
+        token_set = list(token_set)
+        token_to_int = {k:v for v,k in enumerate(token_set)}
+        int_to_token = {v:k for k,v in token_to_int.items()}
+        return token_to_int, int_to_token
+    
+    def get_label_count(self):
+        return len(self.token_to_int)
+    
+    def get_token_distribution(self):
+        target_tokens_count_dict = {}
+        for target in self.Y:
+            for token in target:
+                if token in target_tokens_count_dict: target_tokens_count_dict[token] += 1
+                else: target_tokens_count_dict[token]  = 1
+        target_tokens_count_dict[self.padding_token] = -1
+        return target_tokens_count_dict
+  
+ class EncodeXY:
+    def __init__(self, word_to_index, token_to_int,unknown_token):
+        self.word_to_index = word_to_index
+        self.token_to_int = token_to_int
+        self.unknown_token = unknown_token
+    
+    def encode_X(self,data):
+        X_encoded = []
+        for sentence in data:
+            encoded_sentence = []
+            for word in sentence:
+                if word in self.word_to_index: encoded_sentence.append(self.word_to_index[word])
+                else: encoded_sentence.append(self.word_to_index[self.unknown_token])
+            X_encoded.append(encoded_sentence)
+        return X_encoded
+    
+    def encode_Y(self,data):
+        Y_encoded = []
+        for target in data:
+            encoded_target = []
+            for token in target: encoded_target.append(self.token_to_int[token])
+            Y_encoded.append(encoded_target)
+        return Y_encoded
+ 
+ class DecodeXY:
+    def __init__(self, index_to_word, int_to_token):
+        self.index_to_word = index_to_word
+        self.int_to_token = int_to_token
+    
+    def decode_test_input(self,test_op):
+        X_decoded = []
+        for encoded_list in test_op:
+            decoded_list = []
+            for word_index in encoded_list: decoded_list.append(self.index_to_word[int(word_index)])
+            X_decoded.append(decoded_list)
+        return X_decoded
+    
+    def decode_test_op(self, predicted_op):
+        Y_decoded = []
+        for encoded_list in predicted_op:
+            decoded_list = []
+            for label in encoded_list: decoded_list.append(self.int_to_token[int(label)])
+            Y_decoded.append(decoded_list)
+        return Y_decoded
+        
+class BatchGenerator:
+    def __init__(self, X,Y,batch_size,padding_token,enocoder_XY):
+        self.X = X
+        self.Y = Y
+        self.batch_size = batch_size
+        self.padding_token = padding_token
+        self.enocoder_XY = enocoder_XY
+    
+    def get_num_batches(self):
+        return len(self.X)//self.batch_size
+    
+    def pad_batch(self,batch_data, max_length):
+        padded_batch_data= []
+        for el in batch_data:
+            if len(el) > max_length: padded_el = el[:max_length]
+            else: padded_el = el + [self.padding_token]*(max_length - len(el))
+            padded_batch_data.append(padded_el)
+        return padded_batch_data
+    
+    def get_batch(self,batch_index, return_encoded = True, sentence_length=-1):
+        Xb = self.X[batch_index*self.batch_size:(batch_index+1)*self.batch_size]
+        Yb = self.Y[batch_index*self.batch_size:(batch_index+1)*self.batch_size]
+        
+        max_length = sentence_length
+        if sentence_length == -1:
+            for sentence in Xb:
+                if len(sentence) > max_length: max_length = len(sentence)
+                    
+        Xb = self.pad_batch(Xb,max_length)
+        Yb = self.pad_batch(Yb,max_length)
+        
+        Xb_encoded = self.enocoder_XY.encode_X(Xb)
+        Yb_encoded = self.enocoder_XY.encode_Y(Yb)
+        if not return_encoded: return Xb, Yb
+        else: return torch.tensor(Xb_encoded), torch.tensor(Yb_encoded)
+
+## Read Files
+train_file = "train.txt"
+test_file = "test.txt"
+train_data_loader = DataLoader(train_file)
+test_data_loader = DataLoader(test_file)
+X_tr, Y_tr = train_data_loader.X, train_data_loader.Y
+X_test, Y_test = test_data_loader.X, test_data_loader.Y
+print(len(X_tr),len(Y_tr),len(X_test),len(Y_test))
+
+## Create Vocabulary and ClassLabel from Training Data Only
+## pad tokens will be added in the vocabulary and class labels
+## unknown token will be added in vocabulary only, for handling the unseen words in TestSet
+pad_token = "PAD"
+unknown_token = "UNK"
+vocab_builder = VocabBuilder(X_tr, padding_token=pad_token, unknown_token=unknown_token)
+word_to_index_tr, index_to_word_tr = vocab_builder.word_to_index, vocab_builder.index_to_word
+### vocab_size required later
+vocab_size = vocab_builder.get_vocab_size()
+print(vocab_size,len(word_to_index_tr),len(index_to_word_tr))
+
+label_builder = LabelBuilder(Y_tr, padding_token=pad_token)
+token_to_int_tr, int_to_token_tr = label_builder.token_to_int, label_builder.int_to_token
+### pad_index, num_classes required later
+pad_index = token_to_int_tr['PAD']
+print("Pad index",pad_index)
+num_classes = label_builder.get_label_count()
+print(num_classes,token_to_int_tr, len(int_to_token_tr),label_builder.get_token_distribution())
+
+## Use only Training Vocabulary to convert text to integer indices, and tokens to integer class labels
+enocoder_XY = EncodeXY(word_to_index_tr, token_to_int_tr, unknown_token=unknown_token)
+decoder_XY = DecodeXY(index_to_word_tr, int_to_token_tr)
+
+## Generate Training and Test Batches
+## It is better to encode Batches, rather than the whole dataset at once.
+## So the encoder_XY is passed as an argument to the BatchGenerator.
+batch_size = 10
+max_sentence_length = 40
+batch_generator_tr = BatchGenerator(X_tr,Y_tr, batch_size, pad_token, enocoder_XY)
+batch_generator_test = BatchGenerator(X_test,Y_test, batch_size, pad_token, enocoder_XY)
+### num_batches_tr, num_batches_test  required later
+num_batches_tr = batch_generator_tr.get_num_batches()
+num_batches_test = batch_generator_test.get_num_batches()
+print(num_batches_tr, num_batches_test)
+
+class MyNERModel(nn.Module):
+    def __init__(self,vocab_size, embedding_dim, lstm_neurons, num_lstm_layers, num_classes,
+                 make_birectional=False, debug_mode=False):
+        super().__init__()
+        self.debug_mode = debug_mode
+        self.bidirectional = make_birectional
+        self.lstm_neurons = lstm_neurons
+        self.num_lstm_layers = num_lstm_layers
+        
+        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.lstm = nn.LSTM(input_size=embedding_dim, hidden_size=lstm_neurons, 
+                            num_layers=num_lstm_layers, bidirectional=make_birectional, batch_first=True)
+        if self.bidirectional:
+            self.linear1 = nn.Linear(in_features=2*lstm_neurons, out_features=100)
+        else:
+            self.linear1 = nn.Linear(in_features=lstm_neurons, out_features=100)
+        self.relu = nn.LeakyReLU()
+        self.linear2 = nn.Linear(in_features=100, out_features=num_classes)
+        self.log_softmax = nn.LogSoftmax(dim=1)
+    
+    def forward(self,x,ht,ct):
+        if self.debug_mode: print("Before embedding layer:",x.shape)
+            
+        x = self.embedding(x)
+        if self.debug_mode: print("After embedding layer:",x.shape)
+            
+        x, (ht, ct) = self.lstm(x,(ht,ct))
+        if self.debug_mode: print("After lstm layer:",x.shape,ht.shape,ct.shape)
+        
+        x = x.reshape(-1, x.shape[2])
+        if self.debug_mode: print("After reshaping:",x.shape)
+            
+        x = self.linear1(x)
+        x = self.relu(x)
+        if self.debug_mode: print("After 1st linear layer:",x.shape)
+        
+        x = self.linear2(x)
+        x = self.log_softmax(x)
+        if self.debug_mode: print("After 2nd linear layer:",x.shape)
+        
+        return x, ht,ct
+    
+    def init_state_of_lstm(self,batch_size):
+        if self.bidirectional: first_param = 2*self.num_lstm_layers
+        else: first_param = self.num_lstm_layers
+        return (
+            torch.randn(first_param, batch_size, self.lstm_neurons),
+            torch.randn(first_param, batch_size, self.lstm_neurons),
+        )
+ 
+def predict(model,sentence_list,max_length):
+    model.eval()
+    init_states = model.init_state_of_lstm(len(sentence_list))
+    padded_data = batch_generator_tr.pad_batch(sentence_list,max_length=max_length)
+    encoded_sentences = enocoder_XY.encode_X(padded_data)
+    with torch.no_grad():
+        op, _, _ = model(torch.tensor(encoded_sentences), init_states[0],init_states[1])
+        op = op.reshape(len(sentence_list),max_length,-1)
+        predictions = torch.argmax(op, axis=2)
+        predicted_entities = decoder_XY.decode_test_op(predictions)
+        return predicted_entities
+ 
+def predict_on_test(model):
+    model.eval()
+    init_states = model.init_state_of_lstm(batch_size)
+    Y_actual = []
+    Y_pred = []
+    with torch.no_grad():
+        for i in range(num_batches_test):
+            Xb, Yb = batch_generator_test.get_batch(i)
+            Yb = Yb.reshape(-1)
+            op, _, _ = model(Xb,init_states[0],init_states[1])
+            Y_pred += [int(el) for el in torch.argmax(op,axis=1)]
+            Y_actual += [int(el) for el in Yb]
+            
+    Y_actual_without_pad, Y_pred_without_pad = [],[]
+    for el1, el2 in zip(Y_actual, Y_pred):
+        if el1 == pad_index: continue
+        else: 
+            Y_actual_without_pad.append(el1)
+            Y_pred_without_pad.append(el2)
+    return f1_score(Y_actual_without_pad, Y_pred_without_pad, average="micro")
+    
+epochs = 10
+embedding_dim = 60
+lstm_neurons = 100
+num_lstm_layers = 2
+make_bidirectional = True
+
+model = MyNERModel(vocab_size=vocab_size, embedding_dim=embedding_dim, lstm_neurons=lstm_neurons, 
+                   num_lstm_layers=num_lstm_layers, num_classes = num_classes,
+                   make_birectional=make_bidirectional, debug_mode=True)
+optimizer = torch.optim.Adam(model.parameters(),lr=0.1)
+loss_function = nn.NLLLoss()
+(ht,ct) = model.init_state_of_lstm(batch_size)
+Y_actual, Y_pred = [], []
+
+optimizer.zero_grad()
+Xb, Yb = batch_generator_tr.get_batch(2,sentence_length=-1)
+op, ht,ct = model(Xb,ht,ct)
+print(op.shape)
+print(op[0])
+Yb = Yb.reshape(-1)
+print(op.shape, Yb.shape)
+loss = loss_function(op, Yb)
+print(loss)
+ht = ht.detach()
+ct = ct.detach()
+loss.backward()
+optimizer.step()
+Y_pred += [int(el) for el in torch.argmax(op,axis=1)]
+Y_actual += [int(el) for el in Yb]
+
+optimizer.zero_grad()
+Xb, Yb = batch_generator_tr.get_batch(2,sentence_length=-1)
+op, ht,ct = model(Xb,ht,ct)
+print(op.shape)
+print(op[0])
+Yb = Yb.reshape(-1)
+print(op.shape, Yb.shape)
+loss = loss_function(op, Yb)
+print(loss)
+ht = ht.detach()
+ct = ct.detach()
+loss.backward()
+optimizer.step()
+Y_pred += [int(el) for el in torch.argmax(op,axis=1)]
+Y_actual += [int(el) for el in Yb]
+
+print(f1_score(Y_actual,Y_pred,average="micro"))
+
+sentences_for_predictions = [
+    "Paris is a beautiful city in France".split(" "),
+    "Jim Courier is eating apples at New York".split(" "),
+    "EU rejects German call to boycott British lamb".split(" ")
+]
+
+from torchsummary import summary
+model = MyNERModel(vocab_size=vocab_size, embedding_dim=embedding_dim, lstm_neurons=lstm_neurons, 
+                   num_lstm_layers=num_lstm_layers, num_classes = num_classes,
+                   make_birectional=make_bidirectional, debug_mode=False)
+(ht,ct) = model.init_state_of_lstm(batch_size)
+summary(model,input_size=[(10,40),(4,10,100),(4,10,100)], device="cpu", seq_network=True)
+
+epochs = 8
+embedding_dim = 60
+lstm_neurons = 100
+num_lstm_layers = 3
+make_bidirectional = True
+
+model = MyNERModel(vocab_size=vocab_size, embedding_dim=embedding_dim, lstm_neurons=lstm_neurons, 
+                   num_lstm_layers=num_lstm_layers, num_classes = num_classes,
+                   make_birectional=make_bidirectional, debug_mode=False)
+optimizer = torch.optim.Adam(model.parameters(),lr=0.01)
+loss_function = nn.NLLLoss()
+
+for e in range(epochs):
+    model.train()
+    (ht,ct) = model.init_state_of_lstm(batch_size)
+    epoch_loss = 0
+    Y_actual, Y_pred = [], []
+    for i in range(num_batches_tr):
+        if i%20 == 0: print(i, end=' ')
+        optimizer.zero_grad()
+        Xb, Yb = batch_generator_tr.get_batch(i,sentence_length=-1)
+        op, ht,ct = model(Xb,ht,ct)
+        Yb = Yb.reshape(-1)
+        loss = loss_function(op, Yb)
+        epoch_loss += loss.item()
+        ht = ht.detach()
+        ct = ct.detach()
+        loss.backward()
+        optimizer.step()
+        Y_pred += [int(el) for el in torch.argmax(op,axis=1)]
+        Y_actual += [int(el) for el in Yb]
+    Y_actual_without_pad, Y_pred_without_pad = [],[]
+    for el1, el2 in zip(Y_actual, Y_pred):
+        if el1 == pad_index: continue
+        else: 
+            Y_actual_without_pad.append(el1)
+            Y_pred_without_pad.append(el2)
+    print("\nEpoch: {}, Loss: {}, F1-Score: {}".format(e+1,epoch_loss,f1_score(Y_actual_without_pad,Y_pred_without_pad,average="micro")))
+    print(sentences_for_predictions)
+    print(predict(model,sentences_for_predictions, max_length=8))
+    print(predict_on_test(model))
+    
+sentences_for_predictions_1 = [
+    "Jim Prakash is talking at Delhi".split(" ")
+]
+print(sentences_for_predictions_1)
+print(predict(model,sentences_for_predictions_1, max_length=10))

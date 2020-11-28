@@ -1,0 +1,103 @@
+At Reading Rockets, we believe in the power of books to help children see the world from different perspectives and build empathy. Children who can empathize are able to respond to others with thoughtfulness and understanding. Why is my classmate wearing a headscarf indoors? A beautiful picture book about choosing a new hijab for the first day of school can open windows.
+Through stories, children can meet characters who are dealing with strong emotions and who learn to manage those feelings in positive ways. What a powerful model for kids, especially when they have formed a personal bond with the vividly drawn characters.
+Some children's books tackle the tricky topic of how to handle conflicts at school or in the neighborhood. Sometimes it is as simple as inviting the shy new kid to join in and play. Sometimes it is about learning to find your own individual voice. And sometimes it is about leaning on an understanding adult to help your classmates see your true strengths.
+The messages in these stories can be subtle and powerful. They give kids a chance to reflect, think about their own beliefs and social interactions, and talk with their classmates and family about thorny issues.
+Here are some of the books we recommend for strengthening social and emotional learning. Some of the books deal with bullying head-on.
+Tim's birthday is just a week away, and more than anything he wants a skateboard. But money is tight, and Tim knows his family cannot afford to buy him a board.
+As Tim ponders how he might earn money for a skateboard, he hears The Can Man down the street collecting empty soft drink cans. The clang of the cans in the homeless man's cart gives Tim an idea. He will collect cans too, and cash them in for the redemption money. By the end of the week, Tim has almost reached his goal until a couple of chance encounters with The Can Man change everything.
+Told with honesty and respect, this timely story shines a perceptive light on current social concerns. Readers will be encouraged to think beyond themselves and celebrate the simple acts of kindness and sharing that make a difference in people's lives.
+This book is perfect to read for bedtime to my four-year-old. She loves the story of Rapunzel and this variation of it definitely piqued her interest. The story is not too long so it holds her attention. The pictures are adorable and she especially loved the stickers that came with it. The added bonus of this book is that we can hold onto it for later on when she learns to read and I know she will love it just as much when that time comes.
+Our daughter loves to read and we encourage it almost every day. She is six, in grade one, and will usually read 16-20 pages of one of these readers 4-5 nights per week. These stories are based on the originals e.g. Rapunzel but given a quirky child-friendly twist. There are some words that our daughter will trip over on occasions, and she is at an above-average reading level for her age, but mostly they are well suited. If your child is easily frustrated by new or slightly more complex words then choose the level 2 readers.
+For those of you who already know how a neural network works, you should be able to find a simple structure by seeing this graph. In the next part, the activation function will be the sigmoid function.
+So the question is: how many layers and neurons do we need in order to build a neural network that would fit the dataset above?
+If we use only one neuron it will be the same thing as doing a Logistic Regression because the activation function is the sigmoid function. And we know that it would not work because the dataset is not linearly separable, and Simple Logistic Regression does not work with not linearly separable data. So we have to add a hidden layer. Each neuron in the hidden layer will result in a linear decision boundary.
+In general, a Logistic Regression creates a hyperplane as a decision boundary. Since here we only have one feature, then this hyperplane is only a dot. Visually, we can see that we would need two dots to separate one class from the other. And their values would be around for one -0.5 and the other 0.5.
+Employers are expecting more and more from machine learning projects. Building a jupyter notebook and using a machine learning model to make interesting predictions just is not good enough anymore, and a key step in going beyond this stage is to collect your own data, to ensure that you are solving a niche problem that other applicants you are competing with have not.
+Machine learning has had an open-source culture from the very beginning, and that is forced a lot of companies that used to be insular, siloed and even secretive to update their operations in order to be able to draw machine learning talent. Apple in particular has managed that transition well, and Goku related some of the major cultural shifts that were required.
+
+The main unifying theme is the idea of an intelligent agent. We define AI as the study of
+agents that receive percepts from the environment and perform actions. Each such agent implements a function that maps percept sequences to actions, and we cover different ways to
+represent these functions, such as reactive agents, real-time planners, and decision-theoretic
+systems. We explain the role of learning as extending the reach of the designer into unknown
+environments, and we show how that role constrains agent design, favoring explicit knowledge representation and reasoning. We treat robotics and vision not as independently defined
+problems, but as occurring in the service of achieving goals. We stress the importance of the
+task environment in determining the appropriate agent design.
+Our primary aim is to convey the ideas that have emerged over the past fifty years of AI
+research and the past two millennia of related work. We have tried to avoid excessive formality in the presentation of these ideas while retaining precision. We have included pseudocode
+algorithms to make the key ideas concrete; our pseudocode is described in Appendix B.
+This book is primarily intended for use in an undergraduate course or course sequence.
+The book has 27 chapters, each requiring about a week’s worth of lectures, so working
+through the whole book requires a two-semester sequence. A one-semester course can use
+selected chapters to suit the interests of the instructor and students. The book can also be
+used in a graduate-level course (perhaps with the addition of some of the primary sources
+suggested in the bibliographical notes). Sample syllabi are available at the book’s Web site,
+aima.cs.berkeley.edu. The only prerequisite is familiarity with basic concepts of
+computer science (algorithms, data structures, complexity) at a sophomore level. Freshman
+calculus and linear algebra are useful for some of the topics; the required mathematical background is supplied in Appendix A.
+Exercises are given at the end of each chapter. Exercises requiring significant programming are marked with a keyboard icon. These exercises can best be solved by taking
+advantage of the code repository at aima.cs.berkeley.edu. Some of them are large
+enough to be considered term projects. A number of exercises require some investigation of
+the literature; these are marked with a book icon.
+Throughout the book, important points are marked with a pointing icon. We have included an extensive index of around 6,000 items to make it easy to find things in the book.
+Wherever a new term is first defined, it is also marked in the margin.
+
+An agent is just something that acts (agent comes from the Latin agere, to do). Of course,
+all computer programs do something, but computer agents are expected to do more: operate
+autonomously, perceive their environment, persist over a prolonged time period, adapt to
+RATIONAL AGENT change, and create and pursue goals. A rational agent is one that acts so as to achieve the
+best outcome or, when there is uncertainty, the best expected outcome.
+In the laws of thought approach to AI, the emphasis was on correct inferences. Making correct inferences is sometimes part of being a rational agent, because one way to act
+rationally is to reason logically to the conclusion that a given action will achieve one’s goals
+and then to act on that conclusion. On the other hand, correct inference is not all of rationality; in some situations, there is no provably correct thing to do, but something must still be
+done. There are also ways of acting rationally that cannot be said to involve inference. For
+example, recoiling from a hot stove is a reflex action that is usually more successful than a
+slower action taken after careful deliberation.
+All the skills needed for the Turing Test also allow an agent to act rationally. Knowledge
+representation and reasoning enable agents to reach good decisions. We need to be able to
+generate comprehensible sentences in natural language to get by in a complex society. We
+need learning not only for erudition, but also because it improves our ability to generate
+effective behavior.
+The rational-agent approach has two advantages over the other approaches. First, it
+is more general than the laws of thought approach because correct inference is just one
+of several possible mechanisms for achieving rationality.
+is more famous. Pascal wrote that the arithmetical machine produces effects which appear
+nearer to thought than all the actions of animals. Gottfried Wilhelm Leibniz (1646–1716)
+built a mechanical device intended to carry out operations on concepts rather than numbers,
+but its scope was rather limited. Leibniz did surpass Pascal by building a calculator that
+could add, subtract, multiply, and take roots, whereas the Pascaline could only add and subtract. Some speculated that machines might not just do calculations but actually be able to
+think and act on their own. In his 1651 book Leviathan, Thomas Hobbes suggested the idea
+of an artificial animal, arguing "For what is the heart but a spring; and the nerves, but so
+many strings; and the joints, but so many wheels"
+It’s one thing to say that the mind operates, at least in part, according to logical rules, and
+to build physical systems that emulate some of those rules; it's another to say that the mind
+itself is such a physical system. Ren´e Descartes (1596–1650) gave the first clear discussion
+of the distinction between mind and matter and of the problems that arise. One problem with
+a purely physical conception of the mind is that it seems to leave little room for free will:
+if the mind is governed entirely by physical laws, then it has no more free will than a rock
+deciding to fall toward the center of the earth. Descartes was a strong advocate of the power
+RATIONALISM of reasoning in understanding the world, a philosophy now called rationalism, and one that
+DUALISM counts Aristotle and Leibnitz as members. But Descartes was also a proponent of dualism.
+He held that there is a part of the human mind (or soul or spirit) that is outside of nature,
+exempt from physical laws. Animals, on the other hand, did not possess this dual quality;
+MATERIALISM they could be treated as machines. An alternative to dualism is materialism, which holds
+that the brain's operation according to the laws of physics constitutes the mind. Free will is
+simply the way that the perception of available choices appears to the choosing entity.
+John McCarthy moved from Dartmouth to MIT and there made three crucial contributions in one historic year: 1958. In MIT AI Lab Memo No. 1, McCarthy defined the high-level
+LISP language Lisp, which was to become the dominant AI programming language for the next 30
+years. With Lisp, McCarthy had the tool he needed, but access to scarce and expensive computing resources was also a serious problem. In response, he and others at MIT invented time
+sharing. Also in 1958, McCarthy published a paper entitled Programs with Common Sense,
+in which he described the Advice Taker, a hypothetical program that can be seen as the first
+complete AI system. Like the Logic Theorist and Geometry Theorem Prover, McCarthy's
+program was designed to use knowledge to search for solutions to problems. But unlike the
+others, it was to embody general knowledge of the world. For example, he showed how
+some simple axioms would enable the program to generate a plan to drive to the airport. The
+program was also designed to accept new axioms in the normal course of operation, thereby
+allowing it to achieve competence in new areas without being reprogrammed. The Advice
+Taker thus embodied the central principles of knowledge representation and reasoning: that
+it is useful to have a formal, explicit representation of the world and its workings and to be
+able to manipulate that representation with deductive processes. It is remarkable how much
+of the 1958 paper remains relevant today.
+In an indication that the rampant spread of the novel coronavirus could, at least for the time being, be arrested to some extent, the Kolkata Municipal corporation has earmarked only one area in the city as a containment zone. In its latest update and the first one this month, the civic officials dropped all the earlier seven hot spots across Beliaghata, Barisha, Amherst Street and Chetla from the list and tagged only Umesh Dutta Lane in central Kolkata's Girish Park, a new entrant.
+India overtook Brazil on Saturday as the country with the second highest recorded cases of Covid-19 after the US. The pandemic continued its unprecedented surge in India, with fresh cases close to 90,000 on Saturday, the fourth straight day of record daily rise in infections. In another grim milestone, Covid deaths in India crossed 70,000, having risen by more than 10,000 in 10 days. India’s case count crossed the 41 lakh mark late on Saturday, going past Brazil's tally of 40,93,586 cases at 11pm, as per world meters
+
+

@@ -1,0 +1,3 @@
+]
+print(sentences_for_predictions_1)
+print(predict(model,sentences_for_predictions_1, max_length=10))

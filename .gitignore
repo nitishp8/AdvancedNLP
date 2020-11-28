@@ -1,0 +1,8 @@
+*.jpeg
+.ipynb_checkpoints
+*.zip
+*.bin
+__pycache__
+.vscode
+*.pt
+*/DataSet/*
