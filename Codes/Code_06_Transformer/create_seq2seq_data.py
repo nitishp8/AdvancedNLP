@@ -52,7 +52,7 @@ class Preprocessor:
     
     def transform(self, text_string):
         text_string = self.lower_case(text_string)
-        text_string = self.handle_punctuations(text_string)
+#         text_string = self.handle_punctuations(text_string)
         token_list = self.tokenize(text_string)
         return token_list
 
